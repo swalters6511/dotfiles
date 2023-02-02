@@ -1,150 +1,68 @@
-# Start configuration added by Zim install {{{
-#
-# User configuration sourced by interactive shells
-#
+# Options
+setopt AUTO_PARAM_SLASH
+unsetopt CASE_GLOB
+autoload -Uz compinit; compinit 
 
-# -----------------
-# Zsh configuration
-# -----------------
 
-#
-# History
-#
+# Autocomplete hidden files
+_comp_options+=(globdots)
 
-# Remove older command from the history if a duplicate is to be added.
-setopt HIST_IGNORE_ALL_DUPS
 
-#
-# Input/output
-#
+fpath=(~/.zsh.d/ $fpath)
 
-# Set editor default keymap to emacs (`-e`) or vi (`-v`)
+# Zsh Autocompletions
+source ~/dotfiles/zsh/external/completion.zsh
+
+# Aliases
+source "$XDG_CONFIG_HOME/zsh/aliases"
+
+# Autoload Destination for external/
+fpath=($ZDOTDIR/external $fpath)
+
+# Autoload Destination for Prompt
+autoload -Uz prompt_purification_setup; prompt_purification_setup
+
+# Bd (Back-Directory)
+source ~/dotfiles/zsh/external/bd.zsh
+
+# Push the current directory visited on to the stack.
+setopt AUTO_PUSHD
+
+# Do not store duplicate directories in the stack.
+setopt PUSHD_IGNORE_DUPS
+
+# Do not print the directory stack after using pushd or popd
+setopt PUSHD_SILENT
+
+# Vim bindings for command line
 bindkey -v
+export KEYTIMEOUT=1
 
-# Prompt for spelling correction of commands.
-setopt CORRECT
-
-# Customize spelling correction prompt.
-SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
-
-# Remove path separator from WORDCHARS.
-WORDCHARS=${WORDCHARS//[\/]}
-
-# -----------------
-# Zim configuration
-# -----------------
-
-# Use degit instead of git as the default tool to install and update modules.
-#zstyle ':zim:zmodule' use 'degit'
-
-# --------------------
-# Module configuration
-# --------------------
-
-#
-# git
-#
-
-# Set a custom prefix for the generated aliases. The default prefix is 'G'.
-#zstyle ':zim:git' aliases-prefix 'g'
-
-#
-# input
-#
-
-# Append `../` to your input for each `.` you type after an initial `..`
-#zstyle ':zim:input' double-dot-expand yes
-
-#
-# termtitle
-#
-
-# Set a custom terminal title format using prompt expansion escape sequences.
-# See http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html#Simple-Prompt-Escapes
-# If none is provided, the default '%n@%m: %~' is used.
-zstyle ':zim:termtitle' format '~'
-
-#
-# zsh-autosuggestions
-#
-
-# Disable automatic widget re-binding on each precmd. This can be set when
-# zsh-users/zsh-autosuggestions is the last module in your ~/.zimrc.
-ZSH_AUTOSUGGEST_MANUAL_REBIND=1
-
-# Customize the style that the suggestions are shown with.
-# See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
-#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
-
-#
-# zsh-syntax-highlighting
-#
-
-# Set what highlighters will be used.
-# See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
-
-# Customize the main highlighter styles.
-# See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/main.md#how-to-tweak-it
-#typeset -A ZSH_HIGHLIGHT_STYLES
-#ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
-
-# ------------------
-# Initialize modules
-# ------------------
-
-ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
-# Download zimfw plugin manager if missing.
-if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
-  if (( ${+commands[curl]} )); then
-    curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
-        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  else
-    mkdir -p ${ZIM_HOME} && wget -nv -O ${ZIM_HOME}/zimfw.zsh \
-        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  fi
-fi
-# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
-  source ${ZIM_HOME}/zimfw.zsh init -q
-fi
-# Initialize modules.
-source ${ZIM_HOME}/init.zsh
-
-# ------------------------------
-# Post-init module configuration
-# ------------------------------
-
-#
-# zsh-history-substring-search
-#
-
-zmodload -F zsh/terminfo +p:terminfo
-# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
-for key ('^[[A' '^P' ${terminfo[kcuu1]}) bindkey ${key} history-substring-search-up
-for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search-down
-for key ('k') bindkey -M vicmd ${key} history-substring-search-up
-for key ('j') bindkey -M vicmd ${key} history-substring-search-down
-unset key
-# }}} End configuration added by Zim install
-
-# Created by newuser for 5.8.1
-
-eval "$(oh-my-posh init zsh --config ~/.poshthemes/clean-detailed.omp.json/)"
+# Autoload for Cursor Mode                    {#NOT NEED BUT KEPT AS A REFERENCE}
+# autoload -Uz cursor_mode && cursor_mode
 
 
+# source "$DOTFILES/zsh/.zshrc"
 
+# Vim Mapping For Completion
+zmodload zsh/complist
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
 
+# Editing Commands in Neovim
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd v edit-command-line
 
-
-
-
-
-
-
-
-
-
-eval $(thefuck --alias)
-
+# Fzf + R.I.PGrep
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore-vcs --hidden'
+
+
+# Fzf tab
+source ~/fzf-tab/fzf-tab.plugin.zsh
+
+# Fast Syntax Highlighting
+source ~/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
